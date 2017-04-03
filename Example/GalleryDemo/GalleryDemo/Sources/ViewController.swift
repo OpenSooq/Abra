@@ -3,8 +3,15 @@ import Gallery
 import Lightbox
 import AVFoundation
 import AVKit
+import Photos
 
-class ViewController: UIViewController, LightboxControllerDismissalDelegate, GalleryControllerDelegate {
+class ViewController: UIViewController, LightboxControllerDismissalDelegate, GalleryControllerDelegate, GalleryControllerDelegate2 {
+  
+  func galleryController(_ controller: GalleryController, didSelectAssets assets: [PHAsset]) {
+    controller.dismiss(animated: true, completion: nil)
+    print(assets)
+  }
+
 
   var button: UIButton!
   var gallery: GalleryController!
@@ -15,6 +22,7 @@ class ViewController: UIViewController, LightboxControllerDismissalDelegate, Gal
     view.backgroundColor = UIColor.white
 
     Gallery.Config.VideoEditor.savesEditedVideoToLibrary = true
+    Gallery.Config.Camera.recordMode = .video
 
     button = UIButton(type: .system)
     button.frame.size = CGSize(width: 200, height: 50)
@@ -32,8 +40,8 @@ class ViewController: UIViewController, LightboxControllerDismissalDelegate, Gal
 
   func buttonTouched(_ button: UIButton) {
     gallery = GalleryController()
-    gallery.delegate = self
-
+    //gallery.delegate = self
+    gallery.delegate2 = self
     present(gallery, animated: true, completion: nil)
   }
 

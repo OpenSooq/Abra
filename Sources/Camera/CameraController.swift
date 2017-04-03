@@ -1,5 +1,7 @@
+import Foundation
 import UIKit
 import AVFoundation
+import QuartzCore
 
 class CameraController: UIViewController {
 
@@ -79,26 +81,56 @@ class CameraController: UIViewController {
     EventHub.shared.stackViewTouched?()
   }
 
+    
   func shutterButtonTouched(_ button: ShutterButton) {
     guard let previewLayer = cameraView.previewLayer else { return }
 
-    button.isEnabled = false
-    UIView.animate(withDuration: 0.1, animations: {
-      self.cameraView.shutterOverlayView.alpha = 1
-    }, completion: { _ in
-      UIView.animate(withDuration: 0.1, animations: {
-        self.cameraView.shutterOverlayView.alpha = 0
-      }) 
-    })
+    switch Config.Camera.recordMode {
+        case .photo:
+            
+        button.isEnabled = false
+        UIView.animate(withDuration: 0.1, animations: {
+          self.cameraView.shutterOverlayView.alpha = 1
+        }, completion: { _ in
+          UIView.animate(withDuration: 0.1, animations: {
+            self.cameraView.shutterOverlayView.alpha = 0
+          }) 
+        })
 
-    self.cameraView.stackView.startLoading()
-    cameraMan.takePhoto(previewLayer, location: locationManager?.latestLocation) { asset in
-      button.isEnabled = true
-      self.cameraView.stackView.stopLoading()
+        self.cameraView.stackView.startLoading()
+        cameraMan.takePhoto(previewLayer, location: locationManager?.latestLocation) { asset in
+          button.isEnabled = true
+          self.cameraView.stackView.stopLoading()
 
-      if let asset = asset {
-        Cart.shared.add(Image(asset: asset), newlyTaken: true)
-      }
+          if let asset = asset {
+            Cart.shared.add(Image(asset: asset), newlyTaken: true)
+          }
+        }
+    case .video:
+        
+        if self.cameraMan.isRecording() {
+            UIView.animate(withDuration: 0.2) {
+                self.cameraView.saveLabel.alpha = 1.0
+            }
+            self.cameraMan.stopVideoRecording(location: locationManager?.latestLocation) { asset in
+                UIView.animate(withDuration: 0.2) {
+                    self.cameraView.recLabel.alpha = 0.0
+                    self.cameraView.flashButton.alpha = 1.0
+                    self.cameraView.saveLabel.alpha = 0.0
+                    button.transform = CGAffineTransform.init(scaleX: 1, y: 1)
+                }
+                if let asset = asset {
+                    Cart.shared.video = Video(asset: asset)
+                }
+            }
+        } else {
+            UIView.animate(withDuration: 0.2) {
+                self.cameraView.recLabel.alpha = 1.0
+                self.cameraView.flashButton.alpha = 0.0
+                button.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+            }
+            self.cameraMan.startVideoRecord()
+        }
     }
   }
 

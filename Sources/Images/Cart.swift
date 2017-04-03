@@ -67,6 +67,15 @@ public class Cart {
   }
 
   // MARK: - UIImages
+    
+    func assets() -> [PHAsset] {
+        var assets = [PHAsset]()
+        if let videoAsset = Cart.shared.video?.asset {
+            assets.append(videoAsset)
+        }
+        assets.append(contentsOf: Cart.shared.images.map({ $0.asset }))
+        return assets
+    }
 
   func UIImages() -> [UIImage] {
     lightBoxUIImages = Fetcher.fetchImages(images.map({ $0.asset }))

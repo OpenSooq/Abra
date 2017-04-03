@@ -9,7 +9,7 @@ protocol CameraManDelegate: class {
   func cameraMan(_ cameraMan: CameraMan, didChangeInput input: AVCaptureDeviceInput)
 }
 
-class CameraMan {
+class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
   weak var delegate: CameraManDelegate?
 
   let session = AVCaptureSession()
@@ -19,6 +19,7 @@ class CameraMan {
   var backCamera: AVCaptureDeviceInput?
   var frontCamera: AVCaptureDeviceInput?
   var stillImageOutput: AVCaptureStillImageOutput?
+  var movieOutput: AVCaptureMovieFileOutput?
 
   deinit {
     stop()
@@ -55,6 +56,10 @@ class CameraMan {
     // Output
     stillImageOutput = AVCaptureStillImageOutput()
     stillImageOutput?.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
+    
+    movieOutput = AVCaptureMovieFileOutput()
+    movieOutput?.minFreeDiskSpaceLimit = 1024 * 1024
+    movieOutput?.movieFragmentInterval = kCMTimeInvalid
   }
 
   func addInput(_ input: AVCaptureDeviceInput) {
@@ -79,12 +84,16 @@ class CameraMan {
     // Devices
     setupDevices()
 
-    guard let input = backCamera, let output = stillImageOutput else { return }
+    guard let input = backCamera, let imageOutput = stillImageOutput, let movieOutput = movieOutput else { return }
 
     addInput(input)
 
-    if session.canAddOutput(output) {
-      session.addOutput(output)
+    if session.canAddOutput(imageOutput) {
+      session.addOutput(imageOutput)
+    }
+    
+    if session.canAddOutput(movieOutput) {
+        session.addOutput(movieOutput)
     }
 
     queue.async {
@@ -152,33 +161,92 @@ class CameraMan {
   }
 
   func savePhoto(_ image: UIImage, location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
-    var localIdentifier: String?
-
+    self.save({
+        PHAssetChangeRequest.creationRequestForAsset(from: image)
+    }, location: location, completion: completion)
+  }
+    
+  func save(_ req: @escaping ((Void) -> PHAssetChangeRequest?), location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
     savingQueue.async {
-      do {
-        try PHPhotoLibrary.shared().performChangesAndWait {
-          let request = PHAssetChangeRequest.creationRequestForAsset(from: image)
-          localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
-
-          request.creationDate = Date()
-          request.location = location
+        var localIdentifier: String?
+        do {
+            try PHPhotoLibrary.shared().performChangesAndWait {
+                if let request = req() {
+                    localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
+                    request.creationDate = Date()
+                    request.location = location
+                }
+            }
+            DispatchQueue.main.async {
+                if let localIdentifier = localIdentifier {
+                    completion(Fetcher.fetchAsset(localIdentifier))
+                } else {
+                    completion(nil)
+                }
+            }
+        } catch {
+            DispatchQueue.main.async {
+                completion(nil)
+            }
         }
-
-        DispatchQueue.main.async {
-          if let localIdentifier = localIdentifier {
-            completion(Fetcher.fetchAsset(localIdentifier))
-          } else {
-            completion(nil)
-          }
-        }
-      } catch {
-        DispatchQueue.main.async {
-          completion(nil)
-        }
-      }
     }
   }
+    
+    func isRecording() -> Bool {
+        return self.movieOutput?.isRecording ?? false
+    }
+    
+    func startVideoRecord() {
+        
+        guard let movieOutput = movieOutput else { return }
+        guard let connection = movieOutput.connection(withMediaType: AVMediaTypeVideo) else { return }
+        
+        connection.videoOrientation = Utils.videoOrientation()
+        
+        queue.async {
+            if let url = NSURL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent("movie.mov") {
+                if FileManager.default.fileExists(atPath: url.absoluteString) {
+                    try? FileManager.default.removeItem(at: url)
+                }
+                movieOutput.startRecording(toOutputFileURL: url, recordingDelegate: self)
+            }
+        }
+    }
+    
+    func stopVideoRecording(location: CLLocation?, _ completion: ((PHAsset?) -> Void)? = nil) {
+        self.videoRecordCompletion = completion
+        queue.async {
+            self.movieOutput?.stopRecording()
+        }
+    }
+    
+    var videoRecordCompletion: ((PHAsset?) -> Void)?
 
+    func capture(_ captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAt fileURL: URL!, fromConnections connections: [Any]!) {
+        
+    }
+    
+    func capture(_ captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAt outputFileURL: URL!, fromConnections connections: [Any]!, error: Error!) {
+        if error == nil {
+            saveVideo(at: outputFileURL, location: nil) { asset in
+                self.videoRecordCompletion?(asset)
+                self.videoRecordCompletion = nil
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.videoRecordCompletion?(nil)
+                self.videoRecordCompletion = nil
+            }
+        }
+    }
+    
+    func saveVideo(at path: URL, location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
+        self.save({
+            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: path)
+        }, location: location, completion: completion)
+    }
+
+    
   func flash(_ mode: AVCaptureFlashMode) {
     guard let device = currentInput?.device , device.isFlashModeSupported(mode) else { return }
 

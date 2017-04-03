@@ -61,7 +61,12 @@ class ShutterButton: UIButton {
 
   override var isHighlighted: Bool {
     didSet {
-      overlayView.backgroundColor = isHighlighted ? UIColor.gray : UIColor.white
+        switch Config.Camera.recordMode {
+        case .photo:
+            overlayView.backgroundColor = isHighlighted ? UIColor.gray : UIColor.white
+        case .video:
+            overlayView.backgroundColor = isHighlighted ? UIColor.brown : UIColor.red
+        }
     }
   }
 }

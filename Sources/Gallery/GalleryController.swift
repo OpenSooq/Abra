@@ -1,5 +1,6 @@
 import UIKit
 import AVFoundation
+import Photos
 
 public protocol GalleryControllerDelegate: class {
 
@@ -7,6 +8,14 @@ public protocol GalleryControllerDelegate: class {
   func galleryController(_ controller: GalleryController, didSelectVideo video: Video)
   func galleryController(_ controller: GalleryController, requestLightbox images: [UIImage])
   func galleryControllerDidCancel(_ controller: GalleryController)
+}
+
+public protocol GalleryControllerDelegate2: class {
+    
+    func galleryController(_ controller: GalleryController, requestLightbox images: [UIImage])
+    func galleryControllerDidCancel(_ controller: GalleryController)
+    
+    func galleryController(_ controller: GalleryController, didSelectAssets assets: [PHAsset])
 }
 
 public class GalleryController: UIViewController, PermissionControllerDelegate {
@@ -22,6 +31,7 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
   lazy var pagesController: PagesController = self.makePagesController()
   lazy var permissionController: PermissionController = self.makePermissionController()
   public weak var delegate: GalleryControllerDelegate?
+    public weak var delegate2: GalleryControllerDelegate2?
 
   // MARK: - Life cycle
 
@@ -110,6 +120,7 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
     EventHub.shared.doneWithImages = { [weak self] in
       if let strongSelf = self {
         strongSelf.delegate?.galleryController(strongSelf, didSelectImages: Cart.shared.UIImages())
+        strongSelf.delegate2?.galleryController(strongSelf, didSelectAssets: Cart.shared.assets())
       }
     }
 

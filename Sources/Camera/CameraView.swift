@@ -20,6 +20,8 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   lazy var rotateOverlayView: UIView = self.makeRotateOverlayView()
   lazy var shutterOverlayView: UIView = self.makeShutterOverlayView()
   lazy var blurView: UIVisualEffectView = self.makeBlurView()
+  lazy var recLabel: UILabel = self.makeRecLabel()
+  lazy var saveLabel: UILabel = self.makeSaveLabel()
 
   var timer: Timer?
   var previewLayer: AVCaptureVideoPreviewLayer?
@@ -43,7 +45,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   func setup() {
     addGestureRecognizer(tapGR)
 
-    [closeButton, flashButton, rotateButton, bottomContainer].forEach {
+    [closeButton, flashButton, rotateButton, bottomContainer, recLabel, saveLabel].forEach {
       addSubview($0)
     }
 
@@ -55,7 +57,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
       bottomView.addSubview($0 as! UIView)
     }
 
-    [closeButton, flashButton, rotateButton].forEach {
+    [closeButton, flashButton, rotateButton, recLabel].forEach {
       $0.g_addShadow()
     }
 
@@ -71,6 +73,12 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
     flashButton.g_pin(on: .centerY, view: closeButton)
     flashButton.g_pin(on: .centerX)
     flashButton.g_pin(size: CGSize(width: 60, height: 44))
+    
+    recLabel.g_pin(on: .centerY, view: closeButton)
+    recLabel.g_pin(on: .centerX)
+    
+    recLabel.sizeToFit()
+    recLabel.g_pin(size: recLabel.bounds.size)
 
     rotateButton.g_pin(on: .top)
     rotateButton.g_pin(on: .right)
@@ -86,6 +94,12 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 
     shutterButton.g_pinCenter()
     shutterButton.g_pin(size: CGSize(width: 60, height: 60))
+    
+    saveLabel.g_pin(on: .centerY, view: shutterButton, constant: -45)
+    saveLabel.g_pin(on: .centerX, view: shutterButton)
+    
+    saveLabel.sizeToFit()
+    saveLabel.g_pin(size: saveLabel.bounds.size)
     
     doneButton.g_pin(on: .centerY)
     doneButton.g_pin(on: .right, constant: -38)
@@ -196,6 +210,13 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 
   func makeShutterButton() -> ShutterButton {
     let button = ShutterButton()
+    
+    switch Config.Camera.recordMode {
+    case .photo:
+        button.overlayView.backgroundColor = .white
+    case .video:
+        button.overlayView.backgroundColor = .red
+    }
     button.g_addShadow()
 
     return button
@@ -210,6 +231,23 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
 
     return button
   }
+    
+    func makeRecLabel() -> UILabel {
+        let button = UILabel()
+        button.text = "REC"
+        button.textColor = .red
+        button.alpha = 0.0
+        return button
+    }
+    
+    func makeSaveLabel() -> UILabel {
+        let button = UILabel()
+        button.text = "Saving video..."
+        button.textColor = .white
+        button.alpha = 0.0
+        button.font = UIFont.systemFont(ofSize: 12)
+        return button
+    }
 
   func makeFocusImageView() -> UIImageView {
     let view = UIImageView()
