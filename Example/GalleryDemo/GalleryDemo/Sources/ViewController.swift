@@ -9,7 +9,7 @@ class ViewController: UIViewController, LightboxControllerDismissalDelegate, Gal
   
   func galleryController(_ controller: GalleryController, didSelectAssets assets: [PHAsset]) {
     controller.dismiss(animated: true, completion: nil)
-    print(assets)
+    gallery = nil
   }
 
 

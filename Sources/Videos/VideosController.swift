@@ -108,7 +108,11 @@ class VideosController: UIViewController {
 }
 
 extension VideosController: PageAware {
-
+  
+  func pageDidHide() {
+    
+  }
+  
   func pageDidShow() {
     once.run {
       library.reload {
@@ -198,5 +202,27 @@ extension VideosController: UICollectionViewDataSource, UICollectionViewDelegate
     } else {
       cell.frameView.alpha = 0
     }
+  }
+}
+
+extension VideosController: CartDelegate {
+  
+  func cart(_ cart: Cart, didSet video: Video) {
+    self.items.insert(video, at: 0)
+    self.gridView.collectionView.reloadData()
+    self.gridView.emptyView.isHidden = !self.items.isEmpty
+    refreshView()
+  }
+  
+  func cart(_ cart: Cart, didAdd image: Image, newlyTaken: Bool) {
+    
+  }
+  
+  func cart(_ cart: Cart, didRemove image: Image) {
+    
+  }
+  
+  func cartDidReload(_ cart: Cart) {
+    
   }
 }

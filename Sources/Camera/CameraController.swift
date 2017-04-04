@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import AVFoundation
+import AVKit
 import QuartzCore
 
 class CameraController: UIViewController {
@@ -8,6 +9,8 @@ class CameraController: UIViewController {
   var locationManager: LocationManager?
   lazy var cameraMan: CameraMan = self.makeCameraMan()
   lazy var cameraView: CameraView = self.makeCameraView()
+  lazy var videoBox: VideoBox = self.makeVideoBox()
+  
   let once = Once()
 
   // MARK: - Life cycle
@@ -36,6 +39,15 @@ class CameraController: UIViewController {
   func setup() {
     view.addSubview(cameraView)
     cameraView.g_pinEdges()
+    
+    if Config.Camera.recordMode == .video {
+    
+      cameraView.bottomView.addSubview(videoBox)
+      
+      videoBox.g_pin(size: CGSize(width: 44, height: 44))
+      videoBox.g_pin(on: .centerY)
+      videoBox.g_pin(on: .left, constant: 38)
+    }
 
     cameraView.closeButton.addTarget(self, action: #selector(closeButtonTouched(_:)), for: .touchUpInside)
     cameraView.flashButton.addTarget(self, action: #selector(flashButtonTouched(_:)), for: .touchUpInside)
@@ -114,7 +126,7 @@ class CameraController: UIViewController {
             self.cameraMan.stopVideoRecording(location: locationManager?.latestLocation) { asset in
                 self.cameraView.morphToVideoRecordingSavingDone()
                 if let asset = asset {
-                    Cart.shared.video = Video(asset: asset)
+                    Cart.shared.setVideo(Video(asset: asset))
                 }
                 button.isEnabled = true
             }
@@ -125,6 +137,13 @@ class CameraController: UIViewController {
                 self.cameraView.morphToVideoRecordingStarted()
             }
         }
+    }
+  }
+  
+  func stopVideoRecordingIfStarted() {
+    if self.cameraMan.isRecording() {
+      self.cameraMan.stopVideoRecording(location: locationManager?.latestLocation)
+      self.cameraView.morphToVideoRecordingReset()
     }
   }
 
@@ -154,9 +173,20 @@ class CameraController: UIViewController {
 
     return view
   }
+  
+  func makeVideoBox() -> VideoBox {
+    let videoBox = VideoBox()
+    videoBox.delegate = self
+    
+    return videoBox
+  }
 }
 
 extension CameraController: CartDelegate {
+  
+  func cart(_ cart: Cart, didSet video: Video) {
+    self.videoBox.imageView.g_loadImage(video.asset)
+  }
 
   func cart(_ cart: Cart, didAdd image: Image, newlyTaken: Bool) {
     cameraView.stackView.reload(cart.images, added: true)
@@ -175,12 +205,18 @@ extension CameraController: CartDelegate {
 }
 
 extension CameraController: PageAware {
+  
+  func pageDidHide() {
+    self.stopVideoRecordingIfStarted()
+  }
 
   func pageDidShow() {
     once.run {
       cameraMan.setup()
     }
   }
+  
+  
 }
 
 extension CameraController: CameraViewDelegate {
@@ -204,4 +240,23 @@ extension CameraController: CameraManDelegate {
     cameraView.flashButton.isHidden = !input.device.hasFlash
   }
 
+}
+
+extension CameraController: VideoBoxDelegate {
+  
+  func videoBoxDidTap(_ videoBox: VideoBox) {
+    Cart.shared.video?.fetchPlayerItem { item in
+      guard let item = item else { return }
+      
+      DispatchQueue.main.async {
+        let controller = AVPlayerViewController()
+        let player = AVPlayer(playerItem: item)
+        controller.player = player
+        
+        self.present(controller, animated: true) {
+          player.play()
+        }
+      }
+    }
+  }
 }

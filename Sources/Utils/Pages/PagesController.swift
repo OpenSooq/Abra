@@ -2,6 +2,7 @@ import UIKit
 
 protocol PageAware: class {
   func pageDidShow()
+  func pageDidHide()
 }
 
 class PagesController: UIViewController {
@@ -112,19 +113,25 @@ class PagesController: UIViewController {
       self.scrollView.setContentOffset(point, animated: false)
     }
 
-    notify()
+    notifyShow()
   }
 
   func updateAndNotify(_ index: Int) {
     guard selectedIndex != index else { return }
-
+    notifyHide()
     selectedIndex = index
-    notify()
+    notifyShow()
   }
 
-  func notify() {
+  func notifyShow() {
     if let controller = controllers[selectedIndex] as? PageAware {
       controller.pageDidShow()
+    }
+  }
+  
+  func notifyHide() {
+    if let controller = controllers[selectedIndex] as? PageAware {
+      controller.pageDidHide()
     }
   }
 }

@@ -2,6 +2,7 @@ import UIKit
 import Photos
 
 protocol CartDelegate: class {
+  func cart(_ cart: Cart, didSet video: Video)
   func cart(_ cart: Cart, didAdd image: Image, newlyTaken: Bool)
   func cart(_ cart: Cart, didRemove image: Image)
   func cartDidReload(_ cart: Cart)
@@ -29,6 +30,13 @@ public class Cart {
   }
 
   // MARK: - Logic
+  
+  func setVideo(_ video: Video) {
+    self.video = video
+    for case let delegate as CartDelegate in delegates.allObjects {
+      delegate.cart(self, didSet: video)
+    }
+  }
 
   func add(_ image: Image, newlyTaken: Bool = false) {
     guard !images.contains(image) else { return }
@@ -68,14 +76,14 @@ public class Cart {
 
   // MARK: - UIImages
     
-    func assets() -> [PHAsset] {
-        var assets = [PHAsset]()
-        if let videoAsset = Cart.shared.video?.asset {
-            assets.append(videoAsset)
-        }
-        assets.append(contentsOf: Cart.shared.images.map({ $0.asset }))
-        return assets
+  func assets() -> [PHAsset] {
+    var assets = [PHAsset]()
+    if let videoAsset = Cart.shared.video?.asset {
+      assets.append(videoAsset)
     }
+    assets.append(contentsOf: Cart.shared.images.map({ $0.asset }))
+    return assets
+  }
 
   func UIImages() -> [UIImage] {
     lightBoxUIImages = Fetcher.fetchImages(images.map({ $0.asset }))

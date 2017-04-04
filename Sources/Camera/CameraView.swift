@@ -186,6 +186,16 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
       self.shutterButton.transform = CGAffineTransform(scaleX: 1, y: 1)
     }
   }
+  
+  func morphToVideoRecordingReset() {
+    UIView.animate(withDuration: 0.2) {
+      self.bottomView.alpha = 0.0
+      self.recLabel.alpha = 0.0
+      self.flashButton.alpha = 1.0
+      self.saveLabel.alpha = 0.0
+      self.shutterButton.transform = CGAffineTransform(scaleX: 1, y: 1)
+    }
+  }
 
   // MARK: - Controls
 

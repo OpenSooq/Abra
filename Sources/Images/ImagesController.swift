@@ -124,7 +124,11 @@ class ImagesController: UIViewController {
 }
 
 extension ImagesController: PageAware {
-
+  
+  func pageDidHide() {
+    
+  }
+  
   func pageDidShow() {
     once.run {
       library.reload {
@@ -141,6 +145,10 @@ extension ImagesController: PageAware {
 }
 
 extension ImagesController: CartDelegate {
+  
+  func cart(_ cart: Cart, didSet video: Video) {
+    
+  }
 
   func cart(_ cart: Cart, didAdd image: Image, newlyTaken: Bool) {
     stackView.reload(cart.images, added: true)

@@ -90,7 +90,7 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
   func makeVideosController() -> VideosController {
     let controller = VideosController()
     controller.title = "Gallery.Videos.Title".g_localize(fallback: "VIDEOS")
-
+    Cart.shared.add(delegate: controller)
     return controller
   }
 
@@ -113,7 +113,9 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
   func setup() {
     EventHub.shared.close = { [weak self] in
       if let strongSelf = self {
+        strongSelf.cameraController.stopVideoRecordingIfStarted()
         strongSelf.delegate?.galleryControllerDidCancel(strongSelf)
+        strongSelf.delegate2?.galleryControllerDidCancel(strongSelf)
       }
     }
 
