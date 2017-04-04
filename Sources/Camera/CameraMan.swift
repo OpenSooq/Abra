@@ -9,7 +9,7 @@ protocol CameraManDelegate: class {
   func cameraMan(_ cameraMan: CameraMan, didChangeInput input: AVCaptureDeviceInput)
 }
 
-class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
+class CameraMan {
   weak var delegate: CameraManDelegate?
 
   let session = AVCaptureSession()
@@ -19,7 +19,7 @@ class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
   var backCamera: AVCaptureDeviceInput?
   var frontCamera: AVCaptureDeviceInput?
   var stillImageOutput: AVCaptureStillImageOutput?
-  var movieOutput: AVCaptureMovieFileOutput?
+  var movieOutput: ClosuredAVCaptureMovieFileOutput?
 
   deinit {
     stop()
@@ -57,9 +57,7 @@ class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
     stillImageOutput = AVCaptureStillImageOutput()
     stillImageOutput?.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
     
-    movieOutput = AVCaptureMovieFileOutput()
-    movieOutput?.minFreeDiskSpaceLimit = 1024 * 1024
-    movieOutput?.movieFragmentInterval = kCMTimeInvalid
+    movieOutput = ClosuredAVCaptureMovieFileOutput(sessionQueue: queue)
   }
 
   func addInput(_ input: AVCaptureDeviceInput) {
@@ -92,9 +90,7 @@ class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
       session.addOutput(imageOutput)
     }
     
-    if session.canAddOutput(movieOutput) {
-        session.addOutput(movieOutput)
-    }
+    movieOutput.addToSession(session)
 
     queue.async {
       self.session.startRunning()
@@ -166,7 +162,7 @@ class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
     }, location: location, completion: completion)
   }
     
-  func save(_ req: @escaping ((Void) -> PHAssetChangeRequest?), location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
+  func save(_ req: @escaping ((Void) -> PHAssetChangeRequest?), location: CLLocation?, completion: ((PHAsset?) -> Void)?) {
     savingQueue.async {
         var localIdentifier: String?
         do {
@@ -179,68 +175,39 @@ class CameraMan: NSObject, AVCaptureFileOutputRecordingDelegate {
             }
             DispatchQueue.main.async {
                 if let localIdentifier = localIdentifier {
-                    completion(Fetcher.fetchAsset(localIdentifier))
+                    completion?(Fetcher.fetchAsset(localIdentifier))
                 } else {
-                    completion(nil)
+                    completion?(nil)
                 }
             }
         } catch {
             DispatchQueue.main.async {
-                completion(nil)
+                completion?(nil)
             }
         }
     }
   }
     
     func isRecording() -> Bool {
-        return self.movieOutput?.isRecording ?? false
+        return self.movieOutput?.isRecording() ?? false
     }
-    
-    func startVideoRecord() {
-        
-        guard let movieOutput = movieOutput else { return }
-        guard let connection = movieOutput.connection(withMediaType: AVMediaTypeVideo) else { return }
-        
-        connection.videoOrientation = Utils.videoOrientation()
-        
-        queue.async {
-            if let url = NSURL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent("movie.mov") {
-                if FileManager.default.fileExists(atPath: url.absoluteString) {
-                    try? FileManager.default.removeItem(at: url)
-                }
-                movieOutput.startRecording(toOutputFileURL: url, recordingDelegate: self)
-            }
-        }
+
+    func startVideoRecord(_ completion: ((Bool) -> Void)?) {
+        self.movieOutput?.startRecording(completion)
     }
     
     func stopVideoRecording(location: CLLocation?, _ completion: ((PHAsset?) -> Void)? = nil) {
-        self.videoRecordCompletion = completion
-        queue.async {
-            self.movieOutput?.stopRecording()
+        self.movieOutput?.stopVideoRecording(location: location) { url in
+            if let url = url {
+                self.saveVideo(at: url, location: location, completion: completion)
+            } else {
+                completion?(nil)
+            }
         }
-    }
-    
-    var videoRecordCompletion: ((PHAsset?) -> Void)?
-
-    func capture(_ captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAt fileURL: URL!, fromConnections connections: [Any]!) {
         
     }
     
-    func capture(_ captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAt outputFileURL: URL!, fromConnections connections: [Any]!, error: Error!) {
-        if error == nil {
-            saveVideo(at: outputFileURL, location: nil) { asset in
-                self.videoRecordCompletion?(asset)
-                self.videoRecordCompletion = nil
-            }
-        } else {
-            DispatchQueue.main.async {
-                self.videoRecordCompletion?(nil)
-                self.videoRecordCompletion = nil
-            }
-        }
-    }
-    
-    func saveVideo(at path: URL, location: CLLocation?, completion: @escaping ((PHAsset?) -> Void)) {
+    func saveVideo(at path: URL, location: CLLocation?, completion: ((PHAsset?) -> Void)?) {
         self.save({
             PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: path)
         }, location: location, completion: completion)

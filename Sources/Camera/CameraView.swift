@@ -159,6 +159,31 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
     return point.y > closeButton.frame.maxY
       && point.y < bottomContainer.frame.origin.y
   }
+    
+  // MARK: - Video recording.
+    
+    func morphToVideoRecordingStarted() {
+        UIView.animate(withDuration: 0.2) {
+            self.recLabel.alpha = 1.0
+            self.flashButton.alpha = 0.0
+            self.shutterButton.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+        }
+    }
+    
+    func morphToVideoRecordingSavingStarted() {
+        UIView.animate(withDuration: 0.2) {
+            self.saveLabel.alpha = 1.0
+        }
+    }
+    
+    func morphToVideoRecordingSavingDone() {
+        UIView.animate(withDuration: 0.2) {
+            self.recLabel.alpha = 0.0
+            self.flashButton.alpha = 1.0
+            self.saveLabel.alpha = 0.0
+            self.shutterButton.transform = CGAffineTransform.init(scaleX: 1, y: 1)
+        }
+    }
 
   // MARK: - Controls
 

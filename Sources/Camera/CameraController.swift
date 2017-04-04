@@ -109,27 +109,21 @@ class CameraController: UIViewController {
     case .video:
         
         if self.cameraMan.isRecording() {
-            UIView.animate(withDuration: 0.2) {
-                self.cameraView.saveLabel.alpha = 1.0
-            }
+            self.cameraView.morphToVideoRecordingSavingStarted()
+            button.isEnabled = false
             self.cameraMan.stopVideoRecording(location: locationManager?.latestLocation) { asset in
-                UIView.animate(withDuration: 0.2) {
-                    self.cameraView.recLabel.alpha = 0.0
-                    self.cameraView.flashButton.alpha = 1.0
-                    self.cameraView.saveLabel.alpha = 0.0
-                    button.transform = CGAffineTransform.init(scaleX: 1, y: 1)
-                }
+                self.cameraView.morphToVideoRecordingSavingDone()
                 if let asset = asset {
                     Cart.shared.video = Video(asset: asset)
                 }
+                button.isEnabled = true
             }
         } else {
-            UIView.animate(withDuration: 0.2) {
-                self.cameraView.recLabel.alpha = 1.0
-                self.cameraView.flashButton.alpha = 0.0
-                button.transform = CGAffineTransform.init(scaleX: 0.5, y: 0.5)
+            button.isEnabled = false
+            self.cameraMan.startVideoRecord { result in
+                button.isEnabled = true
+                self.cameraView.morphToVideoRecordingStarted()
             }
-            self.cameraMan.startVideoRecord()
         }
     }
   }
