@@ -164,56 +164,56 @@ class CameraMan {
     
   func save(_ req: @escaping ((Void) -> PHAssetChangeRequest?), location: CLLocation?, completion: ((PHAsset?) -> Void)?) {
     savingQueue.async {
-        var localIdentifier: String?
-        do {
-            try PHPhotoLibrary.shared().performChangesAndWait {
-                if let request = req() {
-                    localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
-                    request.creationDate = Date()
-                    request.location = location
-                }
-            }
-            DispatchQueue.main.async {
-                if let localIdentifier = localIdentifier {
-                    completion?(Fetcher.fetchAsset(localIdentifier))
-                } else {
-                    completion?(nil)
-                }
-            }
-        } catch {
-            DispatchQueue.main.async {
-                completion?(nil)
-            }
+      var localIdentifier: String?
+      do {
+        try PHPhotoLibrary.shared().performChangesAndWait {
+          if let request = req() {
+            localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
+            request.creationDate = Date()
+            request.location = location
+          }
         }
+        DispatchQueue.main.async {
+          if let localIdentifier = localIdentifier {
+            completion?(Fetcher.fetchAsset(localIdentifier))
+          } else {
+            completion?(nil)
+          }
+        }
+      } catch {
+        DispatchQueue.main.async {
+          completion?(nil)
+        }
+      }
     }
   }
-    
-    func isRecording() -> Bool {
-        return self.movieOutput?.isRecording() ?? false
+  
+  func isRecording() -> Bool {
+    return self.movieOutput?.isRecording() ?? false
+  }
+  
+  func startVideoRecord(_ completion: ((Bool) -> Void)?) {
+    self.movieOutput?.startRecording(completion)
+  }
+  
+  func stopVideoRecording(location: CLLocation?, _ completion: ((PHAsset?) -> Void)? = nil) {
+    self.movieOutput?.stopVideoRecording(location: location) { url in
+      if let url = url {
+        self.saveVideo(at: url, location: location, completion: completion)
+      } else {
+        completion?(nil)
+      }
     }
+    
+  }
+  
+  func saveVideo(at path: URL, location: CLLocation?, completion: ((PHAsset?) -> Void)?) {
+    self.save({
+      PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: path)
+    }, location: location, completion: completion)
+  }
 
-    func startVideoRecord(_ completion: ((Bool) -> Void)?) {
-        self.movieOutput?.startRecording(completion)
-    }
-    
-    func stopVideoRecording(location: CLLocation?, _ completion: ((PHAsset?) -> Void)? = nil) {
-        self.movieOutput?.stopVideoRecording(location: location) { url in
-            if let url = url {
-                self.saveVideo(at: url, location: location, completion: completion)
-            } else {
-                completion?(nil)
-            }
-        }
-        
-    }
-    
-    func saveVideo(at path: URL, location: CLLocation?, completion: ((PHAsset?) -> Void)?) {
-        self.save({
-            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: path)
-        }, location: location, completion: completion)
-    }
-
-    
+  
   func flash(_ mode: AVCaptureFlashMode) {
     guard let device = currentInput?.device , device.isFlashModeSupported(mode) else { return }
 

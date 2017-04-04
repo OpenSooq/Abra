@@ -162,30 +162,30 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
     
   // MARK: - Video recording.
     
-    func morphToVideoRecordingStarted() {
-        UIView.animate(withDuration: 0.2) {
-            self.bottomView.alpha = 0.0
-            self.recLabel.alpha = 1.0
-            self.flashButton.alpha = 0.0
-            self.shutterButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-        }
+  func morphToVideoRecordingStarted() {
+    UIView.animate(withDuration: 0.2) {
+      self.bottomView.alpha = 0.0
+      self.recLabel.alpha = 1.0
+      self.flashButton.alpha = 0.0
+      self.shutterButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
     }
-    
-    func morphToVideoRecordingSavingStarted() {
-        UIView.animate(withDuration: 0.2) {
-            self.saveLabel.alpha = 1.0
-        }
+  }
+  
+  func morphToVideoRecordingSavingStarted() {
+    UIView.animate(withDuration: 0.2) {
+      self.saveLabel.alpha = 1.0
     }
-    
-    func morphToVideoRecordingSavingDone() {
-        UIView.animate(withDuration: 0.2) {
-            self.bottomView.alpha = 1.0
-            self.recLabel.alpha = 0.0
-            self.flashButton.alpha = 1.0
-            self.saveLabel.alpha = 0.0
-            self.shutterButton.transform = CGAffineTransform(scaleX: 1, y: 1)
-        }
+  }
+  
+  func morphToVideoRecordingSavingDone() {
+    UIView.animate(withDuration: 0.2) {
+      self.bottomView.alpha = 1.0
+      self.recLabel.alpha = 0.0
+      self.flashButton.alpha = 1.0
+      self.saveLabel.alpha = 0.0
+      self.shutterButton.transform = CGAffineTransform(scaleX: 1, y: 1)
     }
+  }
 
   // MARK: - Controls
 
@@ -259,22 +259,22 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
     return button
   }
     
-    func makeRecLabel() -> UILabel {
-        let button = UILabel()
-        button.text = "REC"
-        button.textColor = .red
-        button.alpha = 0.0
-        return button
-    }
-    
-    func makeSaveLabel() -> UILabel {
-        let button = UILabel()
-        button.text = "Saving video..."
-        button.textColor = .white
-        button.alpha = 0.0
-        button.font = UIFont.systemFont(ofSize: 12)
-        return button
-    }
+  func makeRecLabel() -> UILabel {
+    let button = UILabel()
+    button.text = "REC"
+    button.textColor = .red
+    button.alpha = 0.0
+    return button
+  }
+  
+  func makeSaveLabel() -> UILabel {
+    let button = UILabel()
+    button.text = "Saving video..."
+    button.textColor = .white
+    button.alpha = 0.0
+    button.font = UIFont.systemFont(ofSize: 12)
+    return button
+  }
 
   func makeFocusImageView() -> UIImageView {
     let view = UIImageView()

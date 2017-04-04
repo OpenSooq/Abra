@@ -11,11 +11,11 @@ public protocol GalleryControllerDelegate: class {
 }
 
 public protocol GalleryControllerDelegate2: class {
-    
-    func galleryController(_ controller: GalleryController, requestLightbox images: [UIImage])
-    func galleryControllerDidCancel(_ controller: GalleryController)
-    
-    func galleryController(_ controller: GalleryController, didSelectAssets assets: [PHAsset])
+  
+  func galleryController(_ controller: GalleryController, requestLightbox images: [UIImage])
+  func galleryControllerDidCancel(_ controller: GalleryController)
+  
+  func galleryController(_ controller: GalleryController, didSelectAssets assets: [PHAsset])
 }
 
 public class GalleryController: UIViewController, PermissionControllerDelegate {
@@ -31,7 +31,7 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
   lazy var pagesController: PagesController = self.makePagesController()
   lazy var permissionController: PermissionController = self.makePermissionController()
   public weak var delegate: GalleryControllerDelegate?
-    public weak var delegate2: GalleryControllerDelegate2?
+  public weak var delegate2: GalleryControllerDelegate2?
 
   // MARK: - Life cycle
 
