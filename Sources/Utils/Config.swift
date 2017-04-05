@@ -81,6 +81,10 @@ public struct Config {
       public static var semibold: UIFont = UIFont.boldSystemFont(ofSize: 1)
     }
   }
+    
+  public struct Fetch {
+    public static var limit: Int? = nil
+  }
 
   public struct VideoEditor {
 

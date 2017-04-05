@@ -35,7 +35,13 @@ struct Utils {
   static func fetchOptions() -> PHFetchOptions {
     let options = PHFetchOptions()
     options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-
+    if let fetchLimit = Config.Fetch.limit {
+      if #available(iOS 9.0, *) {
+          options.fetchLimit = fetchLimit
+      } else {
+          // Fallback on earlier versions
+      }
+    }
     return options
   }
 
