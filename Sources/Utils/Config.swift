@@ -85,6 +85,10 @@ public struct Config {
   public struct Fetch {
     public static var limit: Int? = nil
   }
+    
+  public struct SessionPreset {
+      public static var quality: String = AVCaptureSessionPresetHigh
+  }
 
   public struct VideoEditor {
 
