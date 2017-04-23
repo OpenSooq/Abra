@@ -89,6 +89,12 @@ public struct Config {
   public struct SessionPreset {
       public static var quality: String = AVCaptureSessionPresetHigh
   }
+  
+  public struct VideoRecording {
+    
+    public static var maxBytesCount: Int64?
+    public static var maxLengthInSeconds: Int?
+  }
 
   public struct VideoEditor {
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7C8AADAA1EACE71600EC2986 /* ClosuredAVCaptureMovieFileOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C8AADA91EACE71600EC2986 /* ClosuredAVCaptureMovieFileOutput.swift */; };
 		D27B72ED1D6EEEC80093318F /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27B72EC1D6EEEC80093318F /* Tests.swift */; };
 		D27B72FD1D6EEED10093318F /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27B72EF1D6EEED10093318F /* CameraController.swift */; };
 		D27B72FE1D6EEED10093318F /* ImagesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27B72F11D6EEED10093318F /* ImagesController.swift */; };
@@ -71,6 +72,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7C8AADA91EACE71600EC2986 /* ClosuredAVCaptureMovieFileOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClosuredAVCaptureMovieFileOutput.swift; sourceTree = "<group>"; };
 		D27B72EC1D6EEEC80093318F /* Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		D27B72EF1D6EEED10093318F /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
 		D27B72F11D6EEED10093318F /* ImagesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagesController.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 		D27B72F61D6EEED10093318F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				7C8AADA91EACE71600EC2986 /* ClosuredAVCaptureMovieFileOutput.swift */,
 				D2E021611DAF6E3B00984B5A /* Bundle.swift */,
 				D2E021621DAF6E3B00984B5A /* Config.swift */,
 				D2E021641DAF6E3B00984B5A /* Dropdown */,
@@ -461,6 +464,7 @@
 				D2E0218B1DAF6E3B00984B5A /* AVAsset+Extensions.swift in Sources */,
 				D2E0219D1DAF6E3B00984B5A /* VideoEditor.swift in Sources */,
 				D2E021A91DAF6E4300984B5A /* Cart.swift in Sources */,
+				7C8AADAA1EACE71600EC2986 /* ClosuredAVCaptureMovieFileOutput.swift in Sources */,
 				D2E0215E1DAF6E2C00984B5A /* VideoCell.swift in Sources */,
 				D2E021AC1DAF6E4300984B5A /* ImagesLibrary.swift in Sources */,
 				D2E021B21DAF6E4700984B5A /* CameraMan.swift in Sources */,

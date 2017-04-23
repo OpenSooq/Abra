@@ -192,19 +192,18 @@ class CameraMan {
     return self.movieOutput?.isRecording() ?? false
   }
   
-  func startVideoRecord(_ completion: ((Bool) -> Void)?) {
-    self.movieOutput?.startRecording(completion)
+  func startVideoRecord(location: CLLocation?, startCompletion: ((Bool) -> Void)?, stopCompletion: ((PHAsset?) -> Void)? = nil) {
+    self.movieOutput?.startRecording(startCompletion: startCompletion, stopCompletion: { url in
+      if let url = url {
+        self.saveVideo(at: url, location: location, completion: stopCompletion)
+      } else {
+        stopCompletion?(nil)
+      }
+    })
   }
   
-  func stopVideoRecording(location: CLLocation?, _ completion: ((PHAsset?) -> Void)? = nil) {
-    self.movieOutput?.stopVideoRecording(location: location) { url in
-      if let url = url {
-        self.saveVideo(at: url, location: location, completion: completion)
-      } else {
-        completion?(nil)
-      }
-    }
-    
+  func stopVideoRecording() {
+    self.movieOutput?.stopVideoRecording()
   }
   
   func saveVideo(at path: URL, location: CLLocation?, completion: ((PHAsset?) -> Void)?) {

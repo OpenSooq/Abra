@@ -96,53 +96,52 @@ class CameraController: UIViewController {
     
   func shutterButtonTouched(_ button: ShutterButton) {
     guard let previewLayer = cameraView.previewLayer else { return }
-
+    
     switch Config.Camera.recordMode {
-        case .photo:
-            
-        button.isEnabled = false
+    case .photo:
+      
+      button.isEnabled = false
+      UIView.animate(withDuration: 0.1, animations: {
+        self.cameraView.shutterOverlayView.alpha = 1
+      }, completion: { _ in
         UIView.animate(withDuration: 0.1, animations: {
-          self.cameraView.shutterOverlayView.alpha = 1
-        }, completion: { _ in
-          UIView.animate(withDuration: 0.1, animations: {
-            self.cameraView.shutterOverlayView.alpha = 0
-          }) 
+          self.cameraView.shutterOverlayView.alpha = 0
         })
-
-        self.cameraView.stackView.startLoading()
-        cameraMan.takePhoto(previewLayer, location: locationManager?.latestLocation) { asset in
-          button.isEnabled = true
-          self.cameraView.stackView.stopLoading()
-
-          if let asset = asset {
-            Cart.shared.add(Image(asset: asset), newlyTaken: true)
-          }
-        }
-    case .video:
+      })
+      
+      self.cameraView.stackView.startLoading()
+      cameraMan.takePhoto(previewLayer, location: locationManager?.latestLocation) { asset in
+        button.isEnabled = true
+        self.cameraView.stackView.stopLoading()
         
-        if self.cameraMan.isRecording() {
-            self.cameraView.morphToVideoRecordingSavingStarted()
-            button.isEnabled = false
-            self.cameraMan.stopVideoRecording(location: locationManager?.latestLocation) { asset in
-                self.cameraView.morphToVideoRecordingSavingDone()
-                if let asset = asset {
-                    Cart.shared.setVideo(Video(asset: asset))
-                }
-                button.isEnabled = true
-            }
-        } else {
-            button.isEnabled = false
-            self.cameraMan.startVideoRecord { result in
-                button.isEnabled = true
-                self.cameraView.morphToVideoRecordingStarted()
-            }
+        if let asset = asset {
+          Cart.shared.add(Image(asset: asset), newlyTaken: true)
         }
+      }
+    case .video:
+      
+      if self.cameraMan.isRecording() {
+        self.cameraView.morphToVideoRecordingSavingStarted()
+        button.isEnabled = false
+      } else {
+        button.isEnabled = false
+        self.cameraMan.startVideoRecord(location: locationManager?.latestLocation, startCompletion: { result in
+          button.isEnabled = true
+          self.cameraView.morphToVideoRecordingStarted()
+        }, stopCompletion: { asset in
+          self.cameraView.morphToVideoRecordingSavingDone()
+          if let asset = asset {
+            Cart.shared.setVideo(Video(asset: asset))
+          }
+          button.isEnabled = true
+        })
+      }
     }
   }
   
   func stopVideoRecordingIfStarted() {
     if self.cameraMan.isRecording() {
-      self.cameraMan.stopVideoRecording(location: locationManager?.latestLocation)
+      self.cameraMan.stopVideoRecording()
       self.cameraView.morphToVideoRecordingReset()
     }
   }
