@@ -22,8 +22,10 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   lazy var blurView: UIVisualEffectView = self.makeBlurView()
   lazy var recLabel: UILabel = self.makeRecLabel()
   lazy var saveLabel: UILabel = self.makeSaveLabel()
+  lazy var elapsedVideoRecordingTimeLabel: UILabel = self.makeVideoRecordingElapsedTimeLabel()
 
   var timer: Timer?
+  var videoRecordingTimer: Timer?
   var previewLayer: AVCaptureVideoPreviewLayer?
   weak var delegate: CameraViewDelegate?
 
@@ -45,7 +47,7 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   func setup() {
     addGestureRecognizer(tapGR)
 
-    [closeButton, flashButton, rotateButton, bottomContainer, recLabel, saveLabel].forEach {
+    [closeButton, flashButton, rotateButton, bottomContainer, recLabel, saveLabel, elapsedVideoRecordingTimeLabel].forEach {
       addSubview($0)
     }
 
@@ -101,6 +103,9 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
     saveLabel.sizeToFit()
     saveLabel.g_pin(size: saveLabel.bounds.size)
     
+    elapsedVideoRecordingTimeLabel.g_pin(on: .centerY, view: shutterButton, constant: -45)
+    elapsedVideoRecordingTimeLabel.g_pin(on: .centerX, view: shutterButton)
+    
     doneButton.g_pin(on: .centerY)
     doneButton.g_pin(on: .right, constant: -38)
 
@@ -151,6 +156,16 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
       self.focusImageView.transform = CGAffineTransform.identity
     })
   }
+  
+  func videoRecodringTimerFired(_ timer: Timer) {
+    guard let dictionary = timer.userInfo as? [String: Any], let start = dictionary["start"] as? TimeInterval else {
+      return
+    }
+    let now = Date().timeIntervalSince1970
+    let minutes = Int(now - start) / 60
+    let seconds = Int(now - start) % 60
+    self.elapsedVideoRecordingTimeLabel.text = String(format: "%0.2d:%0.2d", minutes, seconds)
+  }
 
   // MARK: - UIGestureRecognizerDelegate
   override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
@@ -163,21 +178,31 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   // MARK: - Video recording.
     
   func morphToVideoRecordingStarted() {
+    
+    let userInfo = ["start": Date().timeIntervalSince1970]
+    self.videoRecordingTimer = Timer.scheduledTimer(
+      timeInterval: 0.5, target: self, selector: #selector(CameraView.videoRecodringTimerFired(_:)), userInfo: userInfo, repeats: true)
+    self.elapsedVideoRecordingTimeLabel.text = self.videoRecordingLabelPlaceholder()
+    
     UIView.animate(withDuration: 0.2) {
       self.bottomView.alpha = 0.0
       self.recLabel.alpha = 1.0
       self.flashButton.alpha = 0.0
+      self.elapsedVideoRecordingTimeLabel.alpha = 1.0
       self.shutterButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
     }
   }
   
   func morphToVideoRecordingSavingStarted() {
+    self.videoRecordingTimer?.invalidate()
     UIView.animate(withDuration: 0.2) {
       self.saveLabel.alpha = 1.0
+      self.elapsedVideoRecordingTimeLabel.alpha = 0.0
     }
   }
   
   func morphToVideoRecordingSavingDone() {
+    self.videoRecordingTimer?.invalidate()
     UIView.animate(withDuration: 0.2) {
       self.bottomView.alpha = 1.0
       self.recLabel.alpha = 0.0
@@ -188,11 +213,13 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   }
   
   func morphToVideoRecordingReset() {
+    self.videoRecordingTimer?.invalidate()
     UIView.animate(withDuration: 0.2) {
       self.bottomView.alpha = 0.0
       self.recLabel.alpha = 0.0
       self.flashButton.alpha = 1.0
       self.saveLabel.alpha = 0.0
+      self.elapsedVideoRecordingTimeLabel.alpha = 0.0
       self.shutterButton.transform = CGAffineTransform(scaleX: 1, y: 1)
     }
   }
@@ -270,20 +297,34 @@ class CameraView: UIView, UIGestureRecognizerDelegate {
   }
     
   func makeRecLabel() -> UILabel {
-    let button = UILabel()
-    button.text = "REC"
-    button.textColor = .red
-    button.alpha = 0.0
-    return button
+    let label = UILabel()
+    label.text = "REC"
+    label.textColor = .red
+    label.alpha = 0.0
+    return label
   }
   
   func makeSaveLabel() -> UILabel {
-    let button = UILabel()
-    button.text = "Saving video..."
-    button.textColor = .white
-    button.alpha = 0.0
-    button.font = UIFont.systemFont(ofSize: 12)
-    return button
+    let label = UILabel()
+    label.text = "Saving video..."
+    label.textColor = .white
+    label.alpha = 0.0
+    label.font = UIFont.systemFont(ofSize: 12)
+    return label
+  }
+  
+  func makeVideoRecordingElapsedTimeLabel() -> UILabel {
+    let label = UILabel()
+    label.text = self.videoRecordingLabelPlaceholder()
+    label.textAlignment = .center
+    label.textColor = .white
+    label.alpha = 0.0
+    label.font = UIFont.systemFont(ofSize: 12)
+    return label
+  }
+  
+  func videoRecordingLabelPlaceholder() -> String {
+    return "--:--"
   }
 
   func makeFocusImageView() -> UIImageView {

@@ -121,19 +121,21 @@ class CameraController: UIViewController {
     case .video:
       
       if self.cameraMan.isRecording() {
-        self.cameraView.morphToVideoRecordingSavingStarted()
         button.isEnabled = false
+        self.cameraView.morphToVideoRecordingSavingStarted()
+        self.cameraMan.stopVideoRecording()
       } else {
         button.isEnabled = false
         self.cameraMan.startVideoRecord(location: locationManager?.latestLocation, startCompletion: { result in
           button.isEnabled = true
           self.cameraView.morphToVideoRecordingStarted()
         }, stopCompletion: { asset in
+          button.isEnabled = true
           self.cameraView.morphToVideoRecordingSavingDone()
           if let asset = asset {
             Cart.shared.setVideo(Video(asset: asset))
           }
-          button.isEnabled = true
+      
         })
       }
     }
