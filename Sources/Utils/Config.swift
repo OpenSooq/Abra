@@ -7,7 +7,14 @@ public struct Config {
     public static var backgroundColor: UIColor = UIColor(red: 0, green: 3/255, blue: 10/255, alpha: 1)
     public static var textColor: UIColor = UIColor.white
   }
-
+  
+  public struct Selection {
+  
+    public enum Mode { case photo, video, camera }
+    
+    public static var mode: Set<Mode> = [.photo, .camera, .video]
+  }
+  
   public struct Camera {
 
     public static var recordLocation: Bool = false
@@ -15,7 +22,7 @@ public struct Config {
     public enum RecordMode { case photo, video }
     
     public static var recordMode = RecordMode.photo
-
+    
     public struct ShutterButton {
       public static var numberColor: UIColor = UIColor(red: 54/255, green: 56/255, blue: 62/255, alpha: 1)
     }

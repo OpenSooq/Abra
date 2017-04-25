@@ -95,8 +95,26 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
   }
 
   func makePagesController() -> PagesController {
-    let controller = PagesController(controllers: [imagesController, cameraController, videosController])
-    controller.selectedIndex = Page.camera.rawValue
+    
+    var controllers = [UIViewController]()
+    
+    if Config.Selection.mode.contains(.photo) {
+      controllers.append(imagesController)
+    }
+    
+    if Config.Selection.mode.contains(.camera) {
+      controllers.append(cameraController)
+    }
+    
+    if Config.Selection.mode.contains(.video) {
+      controllers.append(videosController)
+    }
+    
+    let controller = PagesController(controllers: controllers)
+    
+    if Config.Selection.mode.contains(.camera) {
+      controller.selectedIndex = controllers.index(of: cameraController) ?? 0
+    }
 
     return controller
   }
