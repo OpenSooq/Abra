@@ -29,6 +29,16 @@ public class ClosuredAVCaptureMovieFileOutput: NSObject, AVCaptureFileOutputReco
     if session.canAddOutput(output) {
       session.addOutput(output)
     }
+    
+    if Permission.Microphone.hasPermission {
+      if let audioDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio) {
+        if let audioInput = try? AVCaptureDeviceInput(device: audioDevice) {
+          if session.canAddInput(audioInput){
+            session.addInput(audioInput)
+          }
+        }
+      }
+    }
   }
   
   public func isRecording() -> Bool {

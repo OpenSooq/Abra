@@ -45,6 +45,10 @@ class PermissionController: UIViewController {
     Permission.Camera.request {
       self.check()
     }
+    
+    Permission.Microphone.request {
+      self.check()
+    }
   }
 
   func check() {
