@@ -83,7 +83,11 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
 
   func makeCameraController() -> CameraController {
     let controller = CameraController()
-    controller.title = "Gallery.Camera.Title".g_localize(fallback: "CAMERA")
+    if let customCameraTitleFound = Config.PageIndicator.customCameraLabel {
+      controller.title = customCameraTitleFound
+    } else {
+      controller.title = "Gallery.Camera.Title".g_localize(fallback: "CAMERA")
+    }
     Cart.shared.add(delegate: controller)
 
     return controller
