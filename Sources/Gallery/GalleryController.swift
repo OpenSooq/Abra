@@ -42,7 +42,7 @@ public class GalleryController: UIViewController, PermissionControllerDelegate {
 
     Permission.Microphone.didAsk = false
     
-    if Permission.hasPermissions {
+    if !Config.Permission.shouldCheckPermission || Permission.hasPermissions {
       showMain()
     } else {
       showPermissionView()

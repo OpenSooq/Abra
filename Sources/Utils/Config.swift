@@ -64,6 +64,7 @@ public struct Config {
   }
 
   public struct Permission {
+    public static var shouldCheckPermission = true
     public static var image: UIImage? = Bundle.image("gallery_permission_view_camera")
     public static var textColor: UIColor = UIColor(red: 102/255, green: 118/255, blue: 138/255, alpha: 1)
 
