@@ -1,3 +1,9 @@
+This is the official fork of hyperoslo/Gallery project. It enriches the project by the following features:
+1. Allow the user to record video.
+2. Give more control what the user can do by introducing more setup flags in the Config class. Easly enable (or disable): photo/video picking, video recording.
+3. Allow for skip permissions flow if the app wants to do it on their own.
+4. Provides version no. 2 of the delegate to pass the data using light PHAsset objects rather than massive UIImages.
+
 <img src="Screenshots/Banner.png" alt="Gallery Banner" align="center" />
 
 [![CI Status](http://img.shields.io/travis/hyperoslo/Gallery.svg?style=flat)](https://travis-ci.org/hyperoslo/Gallery)
