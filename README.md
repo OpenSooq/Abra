@@ -1,8 +1,6 @@
 
 <img src="Screenshots/Banner.png" alt="Gallery Banner" align="center" />
 
-### Description
-
 `AbraGallery` is a small library for images & videos picking. It provides video recording too.
 
 ### Usage
@@ -78,4 +76,4 @@ We would love you to contribute to **AbraGallery**, check the [CONTRIBUTING](htt
 
 ## License
 
-**Gallery** is available under the MIT license. See the [LICENSE](https://github.com/hyperoslo/Gallery/blob/master/LICENSE.md) file for more info.
+**AbraGallery** is available under the MIT license. See the [LICENSE](https://github.com/hyperoslo/Gallery/blob/master/LICENSE.md) file for more info.
