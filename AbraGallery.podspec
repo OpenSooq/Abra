@@ -1,15 +1,15 @@
 Pod::Spec.new do |s|
-  s.name             = "Gallery"
+  s.name             = "AbraGallery"
   s.summary          = "Something good about gallery"
   s.version          = "1.0.0"
-  s.homepage         = "https://github.com/hyperoslo/Gallery"
+  s.homepage         = "https://github.com/OpenSooq/Abra.git"
   s.license          = 'MIT'
-  s.author           = { "Hyper Interaktiv AS" => "ios@hyper.no" }
+  s.author           = { "OpenSooq" => "ramzi.q@opensooq.com" }
   s.source           = {
-    :git => "https://github.com/hyperoslo/Gallery.git",
+    :git => "https://github.com/OpenSooq/Abra.git",
     :tag => s.version.to_s
   }
-  s.social_media_url = 'https://twitter.com/hyperoslo'
+  s.social_media_url = 'https://www.facebook.com/opesnooq.engineering/'
 
   s.ios.deployment_target = '8.0'
 
