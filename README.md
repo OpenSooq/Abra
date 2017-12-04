@@ -1,58 +1,31 @@
-This is the official fork of hyperoslo/Gallery project. It enriches the project by the following features:
-1. Allow the user to record video.
-2. Give more control what the user can do by introducing more setup flags in the Config class. Easly enable (or disable): photo/video picking, video recording.
-3. Allow for skip permissions flow if the app wants to do it on their own.
-4. Provides version no. 2 of the delegate to pass the data using light PHAsset objects rather than massive UIImages.
 
 <img src="Screenshots/Banner.png" alt="Gallery Banner" align="center" />
 
-[![CI Status](http://img.shields.io/travis/hyperoslo/Gallery.svg?style=flat)](https://travis-ci.org/hyperoslo/Gallery)
-[![Version](https://img.shields.io/cocoapods/v/Gallery.svg?style=flat)](http://cocoadocs.org/docsets/Gallery)
-[![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![License](https://img.shields.io/cocoapods/l/Gallery.svg?style=flat)](http://cocoadocs.org/docsets/Gallery)
-[![Platform](https://img.shields.io/cocoapods/p/Gallery.svg?style=flat)](http://cocoadocs.org/docsets/Gallery)
-![Swift](https://img.shields.io/badge/%20in-swift%203.0-orange.svg)
+### Description
 
-## Description
+`AbraGallery` is a small library for images & videos picking. It provides video recording too.
 
-<img src="Screenshots/Icon.png" alt="Gallery Icon" align="right" width="250" height="250" />
+### Usage
 
-We all love image pickers, don't we? You may already know of [ImagePicker](https://github.com/hyperoslo/ImagePicker), the all in one solution for capturing pictures and selecting images. Well, it has a sibling too, called `Gallery`. Based on the same engine that powers ImagePicker, Gallery has a clearer flow based on albums and focuses on the use case of selecting video. If this suits your need, give it a try 😉
-
-`Gallery` has 3 tabs with easy navigation through swipe gesture
-
-- Images: select albums and images. Handle selection with hightlighted numbers so your users don't forget the order
-- Camera: your photographer skill goes here
-- Videos: display all videos and select. For now the use case is to select one video at a time
-
-And, it has zero dependencies 😎
-
-## Usage
-
-### Presenting
-
-`GalleryController` is the main entry point, just instantiate and give it the delegate
+`GalleryController` is the main entry point, just instantiate and set the delegate:
 
 ```swift
 let gallery = GalleryController()
-gallery.delegate = self
+gallery.delegate2 = self
 present(gallery, animated: true, completion: nil)
 ```
 
-The content controller is not loaded until the users navigate to, which offers a much faster experience.
-
 ### Delegate
 
-The `GalleryControllerDelegate` requires you to implement some delegate methods in order to interact with the picker
+The `GalleryControllerDelegate2` requires you to implement some delegate methods in order to interact with the `GalleryController`
 
 ```swift
-func galleryController(_ controller: GalleryController, didSelectImages images: [UIImage])
-func galleryController(_ controller: GalleryController, didSelectVideo video: Video)
-func galleryController(_ controller: GalleryController, requestLightbox images: [UIImage])
-func galleryControllerDidCancel(_ controller: GalleryController)
+public protocol GalleryControllerDelegate2: class {
+  func galleryController(_ controller: GalleryController, requestLightbox images: [UIImage])
+  func galleryControllerDidCancel(_ controller: GalleryController)
+  func galleryController(_ controller: GalleryController, didSelectAssets assets: [PHAsset])
+}
 ```
-
-The lightbox delegate method is your chance to display selected images. If you're looking for a nice solution, here is the [Lightbox](https://github.com/hyperoslo/Lightbox) that we use and love
 
 ### Permission
 
@@ -64,6 +37,7 @@ The lightbox delegate method is your chance to display selected images. If you'r
 <key>NSPhotoLibraryUsageDescription</key>
 <string>This app requires access to photo library</string>
 ```
+You may disable permissions flow by the config `Gallery.Config.Permission.shouldCheckPermission = false`
 
 ### Configuration
 
@@ -73,66 +47,34 @@ There are lots of customization points in `Config` structs. For example
 Config.Permission.image = UIImage(named: ImageList.Gallery.cameraIcon)
 Config.Font.Text.bold = UIFont(name: FontList.OpenSans.bold, size: 14)!
 Config.Camera.recordLocation = true
+Config.Camera.recordMode = .video                  // to enable video recording.
+Config.VideoRecording.maxBytesCount = 1024         // to set the maximum size of video.
+Config.VideoRecording.maxLengthInSeconds = .video  // to set the max length of video.
+Config.Selection.mode = [.photo, .camera, .video]  // to enable/disable Photo, Camera and Video tabs.
+Config.SessionPreset.quality = AVCaptureSessionPresetHigh // to define the quality of recorded video.
+
+... and many many more at Config file.
 ```
-
-### Video Editor
-
-`Galery` cares more about video with its editing functionalities. We have `VideoEditor` and `AdvancedVideoEditor` to trim, resize, scale and define quality of the selected video
-
-```swift
-func galleryController(_ controller: GalleryController, didSelectVideo video: Video) {
-  controller.dismiss(animated: true, completion: nil)
-
-  let editor = VideoEditor()
-  editor.edit(video: video) { (editedVideo: Video?, tempPath: URL?) in
-    DispatchQueue.main.async {
-      if let tempPath = tempPath {
-        let controller = AVPlayerViewController()
-        controller.player = AVPlayer(url: tempPath)
-
-        self.present(controller, animated: true, completion: nil)
-      }
-    }
-  }
-}
-```
-
-With the `Video` object, you can `fetchPlayerItem`, `fetchAVAsset` and `fetchThumbnail` as well
-
-And, of course, you have the ability to customize it
-
-```swift
-Config.VideoEditor.maximumDuration = 30
-Config.VideoEditor.savesEditedVideoToLibrary = true
-```
-
-
 
 ## Installation
 
-**Gallery** is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+**AbraGallery** is available through [CocoaPods](http://cocoapods.org). To install it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'Gallery'
+pod 'AbraGallery'
 ```
 
-**Gallery** is also available through [Carthage](https://github.com/Carthage/Carthage).
-To install just write into your Cartfile:
+**AbraGallery** can also be installed manually. Just download and drop `Sources` folders in your project.
 
-```ruby
-github "hyperoslo/Gallery"
-```
+## Author & Contact
 
-**Gallery** can also be installed manually. Just download and drop `Sources` folders in your project.
+OpenSooq, ramzi.q@opensooq.com, damian.k@opensooq.com
 
-## Author
-
-Hyper Interaktiv AS, ios@hyper.no
+Abra Gallery is build at the top of [Gallery](https://github.com/blueimp/Gallery) project.
 
 ## Contributing
 
-We would love you to contribute to **Gallery**, check the [CONTRIBUTING](https://github.com/hyperoslo/Gallery/blob/master/CONTRIBUTING.md) file for more info.
+We would love you to contribute to **AbraGallery**, check the [CONTRIBUTING](https://github.com/hyperoslo/Gallery/blob/master/CONTRIBUTING.md) file for more info.
 
 ## License
 
